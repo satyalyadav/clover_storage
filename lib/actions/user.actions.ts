@@ -3,7 +3,7 @@
 import { Account, ID, Query } from "node-appwrite";
 import { appwriteConfig } from "../appwrite/config";
 import { createAdminClient, createSessionClient } from "../appwrite";
-import { pasreStringify } from "../utils";
+import { parseStringify } from "../utils";
 import { cookies } from "next/headers";
 import path from "path";
 import { avatarPlaceholderUrl } from "@/constants";
@@ -66,7 +66,7 @@ export const createAccount = async ({
         );
     }
 
-    return pasreStringify({ accountId });
+    return parseStringify({ accountId });
 };
 
 export const verifySecret = async ({
@@ -90,7 +90,7 @@ export const verifySecret = async ({
             secure: true,
         });
 
-        return pasreStringify({sessionId: session.$id});
+        return parseStringify({sessionId: session.$id});
     } catch (error) {
         handleError(error, "Failed to verify secret");
     }
@@ -108,7 +108,7 @@ export const getCurrentUser = async () => {
     if(user.total <= 0) {
         return null;
     }
-    return pasreStringify(user.documents[0]);
+    return parseStringify(user.documents[0]);
 }
 
 export const signOutUser = async () => {
@@ -131,10 +131,10 @@ export const signInUser = async ({ email }: { email: string }) => {
       // User exists, send OTP
       if (existingUser) {
         await sendEmailOTP({ email });
-        return pasreStringify({ accountId: existingUser.accountId });
+        return parseStringify({ accountId: existingUser.accountId });
       }
   
-      return pasreStringify({ accountId: null, error: "User not found" });
+      return parseStringify({ accountId: null, error: "User not found" });
     } catch (error) {
       handleError(error, "Failed to sign in user");
     }
