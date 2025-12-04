@@ -1,11 +1,11 @@
 "use client";
 
-import { avatarPlaceholderUrl, navItems } from '@/constants';
+import { navItems } from '@/constants';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import Link from 'next/link'
-import { usePathname } from 'next/navigation';
-import React from 'react'
+import { usePathname, useRouter } from 'next/navigation';
+import React, { useEffect } from 'react'
 
 interface Props {
   fullName: string;
@@ -14,8 +14,14 @@ interface Props {
 }
 
 const Sidebar = ({ fullName, avatar, email }: Props) => {
-
   const pathname = usePathname();
+  const router = useRouter();
+
+  useEffect(() => {
+    navItems.forEach(({ url }) => {
+      router.prefetch(url);
+    });
+  }, [router]);
   
   return (
   <aside className='sidebar'>
@@ -26,6 +32,8 @@ const Sidebar = ({ fullName, avatar, email }: Props) => {
         width={160}
         height={50}
         className='hidden h -auto lg:block'
+        priority
+        style={{ width: "auto", height: "auto" }}
       />
 
       <Image
@@ -34,6 +42,7 @@ const Sidebar = ({ fullName, avatar, email }: Props) => {
         width={52}
         height={52}
         className='lg:hidden'
+        priority
       />
     </Link>
 

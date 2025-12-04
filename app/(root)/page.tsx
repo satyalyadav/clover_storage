@@ -8,13 +8,23 @@ import { FormattedDateTime } from "@/components/FormattedDateTime";
 import { Thumbnail } from "@/components/Thumbnail";
 import { Separator } from "@/components/ui/separator";
 import { getFiles, getTotalSpaceUsed } from "@/lib/actions/file.actions";
+import { getCurrentUser } from "@/lib/actions/user.actions";
 import { convertFileSize, getUsageSummary } from "@/lib/utils";
+import { redirect } from "next/navigation";
 
 const Dashboard = async () => {
+  const currentUser = await getCurrentUser();
+  if (!currentUser) return redirect("/sign-in");
+
   // Parallel requests
   const [files, totalSpace] = await Promise.all([
-    getFiles({ types: [], limit: 10 }),
-    getTotalSpaceUsed(),
+    getFiles({
+      types: [],
+      limit: 10,
+      userId: currentUser.$id,
+      userEmail: currentUser.email,
+    }),
+    getTotalSpaceUsed(currentUser.$id),
   ]);
 
   // Get usage summary
@@ -41,6 +51,8 @@ const Dashboard = async () => {
                     height={100}
                     alt="uploaded image"
                     className="summary-type-icon"
+                    priority
+                    style={{ width: "auto", height: "auto" }}
                   />
                   <h4 className="summary-type-size">
                     {convertFileSize(summary.size) || 0}

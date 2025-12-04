@@ -29,7 +29,18 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 export const Chart = ({ used = 0 }: { used: number }) => {
-  const chartData = [{ storage: "used", 10: used, fill: "white" }];
+  // Ensure used is a valid number
+  const validUsed = typeof used === 'number' && !Number.isNaN(used) && Number.isFinite(used) && used >= 0 
+    ? used 
+    : 0;
+  
+  const percentage = calculatePercentage(validUsed);
+  const validPercentage = Number.isNaN(percentage) || !Number.isFinite(percentage) || percentage < 0
+    ? 0 
+    : Math.min(percentage, 100); // Cap at 100%
+  
+  const endAngle = validPercentage + 90;
+  const chartData = [{ storage: validPercentage, fill: "white" }];
 
   return (
     <Card className="chart">
@@ -38,7 +49,7 @@ export const Chart = ({ used = 0 }: { used: number }) => {
           <RadialBarChart
             data={chartData}
             startAngle={90}
-            endAngle={Number(calculatePercentage(used)) + 90}
+            endAngle={endAngle}
             innerRadius={80}
             outerRadius={110}
           >
@@ -66,11 +77,9 @@ export const Chart = ({ used = 0 }: { used: number }) => {
                           y={viewBox.cy}
                           className="chart-total-percentage"
                         >
-                          {used && calculatePercentage(used)
-                            ? calculatePercentage(used)
-                                .toString()
-                                .replace(/^0+/, "")
-                            : "0"}
+                          {validPercentage
+                            .toString()
+                            .replace(/^0+/, "") || "0"}
                           %
                         </tspan>
                         <tspan
@@ -92,7 +101,7 @@ export const Chart = ({ used = 0 }: { used: number }) => {
       <CardHeader className="chart-details">
         <CardTitle className="chart-title">Available Storage</CardTitle>
         <CardDescription className="chart-description">
-          {used ? convertFileSize(used) : "2GB"} / 2GB
+          {validUsed ? convertFileSize(validUsed) : "0"} / 2GB
         </CardDescription>
       </CardHeader>
     </Card>

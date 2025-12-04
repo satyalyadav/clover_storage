@@ -79,6 +79,9 @@ export const formatDateTime = (isoString: string | null | undefined) => {
   if (!isoString) return "—";
 
   const date = new Date(isoString);
+  
+  // Validate date
+  if (isNaN(date.getTime())) return "—";
 
   // Get hours and adjust for 12-hour format
   let hours = date.getHours();
@@ -183,7 +186,22 @@ export const constructDownloadUrl = (bucketFileId: string) => {
 };
 
 // DASHBOARD UTILS
-export const getUsageSummary = (totalSpace: any) => {
+type UsageBucket = {
+  size: number;
+  latestDate: string;
+};
+
+type TotalSpaceUsage = {
+  document: UsageBucket;
+  image: UsageBucket;
+  video: UsageBucket;
+  audio: UsageBucket;
+  other: UsageBucket;
+  used: number;
+  all: number;
+};
+
+export const getUsageSummary = (totalSpace: TotalSpaceUsage) => {
   return [
     {
       title: "Documents",

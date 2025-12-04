@@ -12,6 +12,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
             width={350}
             height={150}
             className="h-auto"
+            priority
           />
 
           <div className="space-y-5 text-white">
@@ -38,6 +39,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
             width={350}
             height={150}
             className="h-auto w-[200px] lg:w-[250px]"
+            priority
           />
         </div>
 

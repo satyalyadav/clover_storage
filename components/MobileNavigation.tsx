@@ -7,8 +7,8 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import Image from "next/image";
-import React, { useState } from "react";
-import { usePathname } from "next/navigation";
+import React, { useEffect, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import { Separator } from "@radix-ui/react-separator";
 import { navItems } from "@/constants";
 import Link from "next/link";
@@ -34,6 +34,13 @@ const MobileNavigation = ({
 }: Props) => {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
+
+  useEffect(() => {
+    navItems.forEach(({ url }) => {
+      router.prefetch(url);
+    });
+  }, [router]);
 
   return (
     <header className="mobile-header">
@@ -43,6 +50,7 @@ const MobileNavigation = ({
         width={120}
         height={52}
         className="h-auto"
+        priority
       />
 
       <Sheet open={open} onOpenChange={setOpen}>

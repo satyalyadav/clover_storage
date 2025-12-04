@@ -3,7 +3,7 @@
 import { createAdminClient, createSessionClient } from "@/lib/appwrite";
 import { InputFile } from "node-appwrite/file";
 import { appwriteConfig } from "@/lib/appwrite/config";
-import { ID, Models, Query } from "node-appwrite";
+import { ID, Query } from "node-appwrite";
 import { constructFileUrl, getFileType, parseStringify } from "@/lib/utils";
 import { revalidatePath } from "next/cache";
 import { getCurrentUser } from "@/lib/actions/user.actions";
@@ -62,7 +62,8 @@ export const uploadFile = async ({
 };
 
 const createQueries = (
-  currentUser: Models.Document,
+  ownerId: string,
+  email: string,
   types: string[],
   searchText: string,
   sort: string,
@@ -70,8 +71,8 @@ const createQueries = (
 ) => {
   const queries = [
     Query.or([
-      Query.equal("owner", [currentUser.$id]),
-      Query.contains("users", [currentUser.email]),
+      Query.equal("owner", [ownerId]),
+      Query.contains("users", [email]),
     ]),
   ];
 
@@ -95,15 +96,27 @@ export const getFiles = async ({
   searchText = "",
   sort = "$createdAt-desc",
   limit,
+  userId,
+  userEmail,
 }: GetFilesProps) => {
   const { databases } = await createAdminClient();
 
   try {
-    const currentUser = await getCurrentUser();
+    let ownerId = userId;
+    let email = userEmail;
 
-    if (!currentUser) throw new Error("User not found");
+    if (!ownerId || !email) {
+      const currentUser = await getCurrentUser();
 
-    const queries = createQueries(currentUser, types, searchText, sort, limit);
+      if (!currentUser) throw new Error("User not found");
+
+      ownerId = currentUser.$id;
+      email = currentUser.email;
+    }
+
+    if (!ownerId || !email) throw new Error("User not found");
+
+    const queries = createQueries(ownerId, email, types, searchText, sort, limit);
 
     const files = await databases.listDocuments(
       appwriteConfig.databaseId,
@@ -111,7 +124,6 @@ export const getFiles = async ({
       queries,
     );
 
-    console.log({ files });
     return parseStringify(files);
   } catch (error) {
     handleError(error, "Failed to get files");
@@ -194,16 +206,21 @@ export const deleteFile = async ({
 };
 
 // ============================== TOTAL FILE SPACE USED
-export async function getTotalSpaceUsed() {
+export async function getTotalSpaceUsed(ownerId?: string) {
   try {
     const { databases } = await createSessionClient();
-    const currentUser = await getCurrentUser();
-    if (!currentUser) throw new Error("User is not authenticated.");
+    let currentUserId = ownerId;
+
+    if (!currentUserId) {
+      const currentUser = await getCurrentUser();
+      if (!currentUser) throw new Error("User is not authenticated.");
+      currentUserId = currentUser.$id;
+    }
 
     const files = await databases.listDocuments(
       appwriteConfig.databaseId,
       appwriteConfig.filesCollectionId,
-      [Query.equal("owner", [currentUser.$id])],
+      [Query.equal("owner", [currentUserId])],
     );
 
     const totalSpace = {

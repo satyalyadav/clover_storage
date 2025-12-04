@@ -16,6 +16,7 @@ Clover is a modern, full-stack cloud file storage and management web application
 ## Technologies Used
 
 ### Frontend
+
 - **Next.js 15.1.5** - React framework with App Router
 - **React 19** - UI library
 - **TypeScript 5** - Type-safe development
@@ -26,6 +27,7 @@ Clover is a modern, full-stack cloud file storage and management web application
 - **Lucide React** - Icon library
 
 ### Backend & Services
+
 - **Appwrite** - Backend-as-a-Service for:
   - User authentication
   - Database management
@@ -33,11 +35,13 @@ Clover is a modern, full-stack cloud file storage and management web application
   - Server-side operations
 
 ### Form Handling & Validation
+
 - **React Hook Form** - Form state management
 - **Zod** - Schema validation
 - **@hookform/resolvers** - Form validation integration
 
 ### Additional Libraries
+
 - **react-dropzone** - File upload handling
 - **input-otp** - OTP input component
 - **use-debounce** - Debouncing utilities
@@ -46,13 +50,8 @@ Clover is a modern, full-stack cloud file storage and management web application
 
 ## Prerequisites
 
-- Node.js 18+ and npm/yarn/pnpm/bun
-- An Appwrite instance (cloud or self-hosted)
-- Appwrite project with:
-  - Database
-  - Collections (users, files)
-  - Storage bucket
-  - Authentication enabled
+- **Node.js 18+** and npm/yarn/pnpm/bun
+- An **Appwrite** account (sign up at [appwrite.io](https://appwrite.io) or use self-hosted instance)
 
 ## Getting Started
 
@@ -75,21 +74,92 @@ pnpm install
 bun install
 ```
 
-### 3. Set up environment variables
+### 3. Set up Appwrite
 
-Create a `.env.local` file in the root directory and add the following variables:
+#### Create an Appwrite Project
+
+1. Go to your [Appwrite Console](https://cloud.appwrite.io) (or your self-hosted instance)
+2. Create a new project
+3. Note your **Project ID** and **API Endpoint**
+
+#### Set up Authentication
+
+1. In your Appwrite project, go to **Auth** → **Settings**
+2. Enable **Email/Password** authentication
+3. Configure email settings (SMTP) for OTP delivery
+
+#### Create Database and Collections
+
+1. Go to **Databases** → Create a new database
+2. Note your **Database ID**
+
+**Create Users Collection:**
+
+- Collection ID: `users` (or your preferred name)
+- Add the following attributes:
+  - `fullName` (String, required)
+  - `email` (String, required, unique)
+  - `avatar` (String, required)
+  - `accountId` (String, required)
+- Set permissions: Allow users to read/write their own documents
+
+**Create Files Collection:**
+
+- Collection ID: `files` (or your preferred name)
+- Add the following attributes:
+  - `type` (String, required) - Values: "document", "image", "video", "audio", "other"
+  - `name` (String, required)
+  - `url` (String, required)
+  - `extension` (String, required)
+  - `size` (Integer, required)
+  - `owner` (String, required) - User ID reference
+  - `accountId` (String, required)
+  - `users` (String[], required) - Array of email addresses for sharing
+  - `bucketFileId` (String, required)
+- Set permissions: Allow users to read/write their own documents and read shared files
+
+#### Create Storage Bucket
+
+1. Go to **Storage** → Create a new bucket
+2. Note your **Bucket ID**
+3. Set bucket permissions:
+   - **Create**: Authenticated users
+   - **Read**: Authenticated users
+   - **Update**: File owner
+   - **Delete**: File owner
+4. Configure file size limit (default: 50MB, can be adjusted in `constants/index.ts`)
+
+#### Get API Keys
+
+1. Go to **Settings** → **API Keys**
+2. Create a new API key with the following scopes:
+   - `databases.read`
+   - `databases.write`
+   - `storage.read`
+   - `storage.write`
+   - `users.read`
+3. Copy the **Secret Key** (you won't be able to see it again)
+
+### 4. Set up environment variables
+
+Create a `.env.local` file in the root directory:
 
 ```env
-NEXT_PUBLIC_APPWRITE_ENDPOINT=your_appwrite_endpoint
+# Appwrite Configuration
+NEXT_PUBLIC_APPWRITE_ENDPOINT=https://cloud.appwrite.io/v1
+# or for self-hosted: http://your-appwrite-instance/v1
+
 NEXT_PUBLIC_APPWRITE_PROJECT=your_project_id
 NEXT_PUBLIC_APPWRITE_DATABASE=your_database_id
-NEXT_PUBLIC_APPWRITE_USERS_COLLECTION=your_users_collection_id
-NEXT_PUBLIC_APPWRITE_FILES_COLLECTION=your_files_collection_id
+NEXT_PUBLIC_APPWRITE_USERS_COLLECTION=users
+NEXT_PUBLIC_APPWRITE_FILES_COLLECTION=files
 NEXT_PUBLIC_APPWRITE_BUCKET=your_bucket_id
-NEXT_APPWRITE_KEY=your_appwrite_secret_key
+NEXT_APPWRITE_KEY=your_secret_api_key
 ```
 
-### 4. Run the development server
+**Important:** Replace all placeholder values with your actual Appwrite configuration IDs.
+
+### 5. Run the development server
 
 ```bash
 npm run dev
@@ -103,36 +173,11 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) in your browser to see the application.
 
-### 5. Build for production
+### 6. Build for production
 
 ```bash
 npm run build
 npm start
-```
-
-## Project Structure
-
-```
-clover/
-├── app/                    # Next.js app directory
-│   ├── (auth)/            # Authentication routes
-│   │   ├── sign-in/
-│   │   └── sign-up/
-│   ├── (root)/            # Protected routes
-│   │   ├── [type]/        # File type pages
-│   │   └── page.tsx        # Dashboard
-│   ├── layout.tsx         # Root layout
-│   └── globals.css        # Global styles
-├── components/             # React components
-│   ├── ui/                # shadcn/ui components
-│   └── ...                # Custom components
-├── lib/                    # Utility functions and configurations
-│   ├── appwrite/          # Appwrite client setup
-│   └── actions/           # Server actions
-├── hooks/                  # Custom React hooks
-├── constants/              # App constants
-├── types/                  # TypeScript type definitions
-└── public/                 # Static assets
 ```
 
 ## Learn More
@@ -142,10 +187,26 @@ clover/
 - [Tailwind CSS Documentation](https://tailwindcss.com/docs)
 - [Radix UI Documentation](https://www.radix-ui.com/docs)
 
-## Deploy on Vercel
+## Deployment
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Deploy on Vercel
 
-Make sure to add all environment variables in your Vercel project settings.
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme).
+
+1. Push your code to GitHub/GitLab/Bitbucket
+2. Import your repository to Vercel
+3. Add all environment variables in **Settings** → **Environment Variables**
+4. Deploy!
+
+**Important:** Make sure to add all environment variables from your `.env.local` file to your Vercel project settings.
+
+### Other Deployment Options
+
+You can also deploy to:
+
+- **Netlify** - Similar process, add environment variables in site settings
+- **Railway** - Supports Next.js out of the box
+- **Docker** - Build and deploy using containers
+- **Self-hosted** - Deploy to your own server
 
 Check out the [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
