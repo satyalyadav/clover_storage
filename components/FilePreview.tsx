@@ -1,0 +1,283 @@
+"use client";
+
+import React, { useState, useEffect } from "react";
+import { Models } from "node-appwrite";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { getFileType } from "@/lib/utils";
+import Image from "next/image";
+
+interface FilePreviewProps {
+  file: Models.Document | null;
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+interface ZipEntry {
+  name: string;
+  size: number;
+  isDirectory: boolean;
+}
+
+const FilePreview: React.FC<FilePreviewProps> = ({ file, isOpen, onClose }) => {
+  const [zipContents, setZipContents] = useState<ZipEntry[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [textContent, setTextContent] = useState<string>("");
+
+  useEffect(() => {
+    if (!file || !isOpen) {
+      setZipContents([]);
+      setTextContent("");
+      setError(null);
+      return;
+    }
+
+    const fileType = getFileType(file.name);
+    const { extension } = fileType;
+
+    // Handle zip files
+    if (extension === "zip") {
+      loadZipContents();
+    }
+    // Handle text files
+    else if (["txt", "md", "csv"].includes(extension)) {
+      loadTextContent();
+    }
+  }, [file, isOpen]);
+
+  const loadZipContents = async () => {
+    if (!file) return;
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      // Dynamically import JSZip only when needed
+      const JSZip = (await import("jszip")).default;
+
+      const response = await fetch(file.url);
+      if (!response.ok) throw new Error("Failed to fetch zip file");
+
+      const arrayBuffer = await response.arrayBuffer();
+      const zip = await JSZip.loadAsync(arrayBuffer);
+
+      const entries: ZipEntry[] = [];
+
+      zip.forEach((relativePath, file) => {
+        entries.push({
+          name: relativePath,
+          size: file._data?.uncompressedSize || 0,
+          isDirectory: file.dir || false,
+        });
+      });
+
+      // Sort: directories first, then by name
+      entries.sort((a, b) => {
+        if (a.isDirectory && !b.isDirectory) return -1;
+        if (!a.isDirectory && b.isDirectory) return 1;
+        return a.name.localeCompare(b.name);
+      });
+
+      setZipContents(entries);
+    } catch (err) {
+      console.error("Error loading zip contents:", err);
+      setError("Failed to load zip file contents");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadTextContent = async () => {
+    if (!file) return;
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch(file.url);
+      if (!response.ok) throw new Error("Failed to fetch file");
+
+      const text = await response.text();
+      setTextContent(text);
+    } catch (err) {
+      console.error("Error loading text content:", err);
+      setError("Failed to load file content");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!file) return null;
+
+  const fileType = getFileType(file.name);
+  const { type, extension } = fileType;
+
+  const renderPreview = () => {
+    // Image preview (including SVG)
+    if (type === "image") {
+      return (
+        <div className="flex items-center justify-center w-full h-full min-h-[400px] bg-neutral-50 dark:bg-neutral-900 p-4">
+          {extension === "svg" ? (
+            <img
+              src={file.url}
+              alt={file.name}
+              className="max-w-full max-h-[70vh] object-contain rounded-lg"
+            />
+          ) : (
+            <Image
+              src={file.url}
+              alt={file.name}
+              width={1200}
+              height={800}
+              className="max-w-full max-h-[70vh] object-contain rounded-lg"
+              unoptimized
+            />
+          )}
+        </div>
+      );
+    }
+
+    // Video preview
+    if (type === "video") {
+      return (
+        <div className="flex items-center justify-center w-full h-full min-h-[400px] bg-black p-4">
+          <video
+            src={file.url}
+            controls
+            className="max-w-full max-h-[70vh] rounded-lg"
+          >
+            Your browser does not support the video tag.
+          </video>
+        </div>
+      );
+    }
+
+    // PDF preview
+    if (extension === "pdf") {
+      return (
+        <div className="w-full h-[70vh] bg-neutral-50 dark:bg-neutral-900">
+          <iframe
+            src={file.url}
+            className="w-full h-full border-0 rounded-lg"
+            title={file.name}
+          />
+        </div>
+      );
+    }
+
+    // Text files preview
+    if (["txt", "md", "csv"].includes(extension)) {
+      if (loading) {
+        return (
+          <div className="flex items-center justify-center h-[400px]">
+            <p className="text-neutral-500">Loading content...</p>
+          </div>
+        );
+      }
+
+      if (error) {
+        return (
+          <div className="flex items-center justify-center h-[400px]">
+            <p className="text-red-500">{error}</p>
+          </div>
+        );
+      }
+
+      return (
+        <div className="w-full h-[70vh] bg-neutral-50 dark:bg-neutral-900 p-4 overflow-auto rounded-lg">
+          <pre className="whitespace-pre-wrap font-mono text-sm text-neutral-900 dark:text-neutral-100">
+            {textContent}
+          </pre>
+        </div>
+      );
+    }
+
+    // Zip file preview
+    if (extension === "zip") {
+      if (loading) {
+        return (
+          <div className="flex items-center justify-center h-[400px]">
+            <p className="text-neutral-500">Loading zip contents...</p>
+          </div>
+        );
+      }
+
+      if (error) {
+        return (
+          <div className="flex items-center justify-center h-[400px]">
+            <p className="text-red-500">{error}</p>
+          </div>
+        );
+      }
+
+      return (
+        <div className="w-full max-h-[70vh] overflow-auto bg-neutral-50 dark:bg-neutral-900 p-4 rounded-lg">
+          <h3 className="text-lg font-semibold mb-4 text-neutral-900 dark:text-neutral-100">
+            Zip Contents ({zipContents.length} items)
+          </h3>
+          {zipContents.length === 0 ? (
+            <p className="text-neutral-500">No contents found</p>
+          ) : (
+            <ul className="space-y-1">
+              {zipContents.map((entry, index) => (
+                <li
+                  key={index}
+                  className={`flex items-center gap-2 p-2 rounded ${
+                    entry.isDirectory
+                      ? "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300"
+                      : "bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300"
+                  }`}
+                >
+                  <span className="text-sm">
+                    {entry.isDirectory ? "📁" : "📄"}
+                  </span>
+                  <span className="flex-1 text-sm font-mono">{entry.name}</span>
+                  {!entry.isDirectory && (
+                    <span className="text-xs text-neutral-500">
+                      {(entry.size / 1024).toFixed(2)} KB
+                    </span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      );
+    }
+
+    // Unsupported file types
+    return (
+      <div className="flex flex-col items-center justify-center h-[400px] gap-4">
+        <p className="text-neutral-500 text-center">
+          Preview not available for this file type
+        </p>
+        <a
+          href={file.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-blue-600 dark:text-blue-400 hover:underline"
+        >
+          Open in new tab
+        </a>
+      </div>
+    );
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+        <DialogHeader>
+          <DialogTitle className="truncate pr-8">{file.name}</DialogTitle>
+        </DialogHeader>
+        <div className="flex-1 overflow-auto">{renderPreview()}</div>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+export default FilePreview;

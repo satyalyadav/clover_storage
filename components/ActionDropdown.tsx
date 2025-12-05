@@ -141,7 +141,12 @@ const ActionDropdown = ({ file }: { file: Models.Document }) => {
   return (
     <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
       <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
-        <DropdownMenuTrigger className="shad-no-focus">
+        <DropdownMenuTrigger
+          className="shad-no-focus"
+          onClick={(e) => {
+            e.stopPropagation();
+          }}
+        >
           <Image
             src="/assets/icons/dots.svg"
             alt="dots"
@@ -158,12 +163,13 @@ const ActionDropdown = ({ file }: { file: Models.Document }) => {
             <DropdownMenuItem
               key={actionItem.value}
               className="shad-dropdown-item"
-              onClick={() => {
+              onClick={(e) => {
+                e.stopPropagation();
                 setAction(actionItem);
 
                 if (
                   ["rename", "share", "delete", "details"].includes(
-                    actionItem.value,
+                    actionItem.value
                   )
                 ) {
                   setIsModalOpen(true);
