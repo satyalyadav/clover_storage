@@ -17,9 +17,9 @@ Clover is a modern, full-stack cloud file storage and management web application
 
 ### Frontend
 
-- **Next.js 15.1.5** - React framework with App Router
-- **React 19** - UI library
-- **TypeScript 5** - Type-safe development
+- **Next.js** - React framework with App Router
+- **React** - UI library
+- **TypeScript** - Type-safe development
 - **Tailwind CSS** - Utility-first CSS framework
 - **Radix UI** - Accessible component primitives (dialogs, dropdowns, selects, toasts)
 - **shadcn/ui** - Re-usable component library
@@ -50,7 +50,7 @@ Clover is a modern, full-stack cloud file storage and management web application
 
 ## Prerequisites
 
-- **Node.js 18+** and npm/yarn/pnpm/bun
+- **Node.js** (current LTS) and npm/yarn/pnpm/bun
 - An **Appwrite** account (sign up at [appwrite.io](https://appwrite.io) or use self-hosted instance)
 
 ## Getting Started

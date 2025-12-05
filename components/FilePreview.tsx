@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Models } from "node-appwrite";
 import {
   Dialog,
@@ -29,28 +29,7 @@ const FilePreview: React.FC<FilePreviewProps> = ({ file, isOpen, onClose }) => {
   const [error, setError] = useState<string | null>(null);
   const [textContent, setTextContent] = useState<string>("");
 
-  useEffect(() => {
-    if (!file || !isOpen) {
-      setZipContents([]);
-      setTextContent("");
-      setError(null);
-      return;
-    }
-
-    const fileType = getFileType(file.name);
-    const { extension } = fileType;
-
-    // Handle zip files
-    if (extension === "zip") {
-      loadZipContents();
-    }
-    // Handle text files
-    else if (["txt", "md", "csv"].includes(extension)) {
-      loadTextContent();
-    }
-  }, [file, isOpen]);
-
-  const loadZipContents = async () => {
+  const loadZipContents = useCallback(async () => {
     if (!file) return;
 
     setLoading(true);
@@ -90,9 +69,9 @@ const FilePreview: React.FC<FilePreviewProps> = ({ file, isOpen, onClose }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [file]);
 
-  const loadTextContent = async () => {
+  const loadTextContent = useCallback(async () => {
     if (!file) return;
 
     setLoading(true);
@@ -110,7 +89,28 @@ const FilePreview: React.FC<FilePreviewProps> = ({ file, isOpen, onClose }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [file]);
+
+  useEffect(() => {
+    if (!file || !isOpen) {
+      setZipContents([]);
+      setTextContent("");
+      setError(null);
+      return;
+    }
+
+    const fileType = getFileType(file.name);
+    const { extension } = fileType;
+
+    // Handle zip files
+    if (extension === "zip") {
+      loadZipContents();
+    }
+    // Handle text files
+    else if (["txt", "md", "csv"].includes(extension)) {
+      loadTextContent();
+    }
+  }, [file, isOpen, loadZipContents, loadTextContent]);
 
   if (!file) return null;
 
@@ -123,10 +123,13 @@ const FilePreview: React.FC<FilePreviewProps> = ({ file, isOpen, onClose }) => {
       return (
         <div className="flex items-center justify-center w-full h-full min-h-[400px] bg-neutral-50 dark:bg-neutral-900 p-4">
           {extension === "svg" ? (
-            <img
+            <Image
               src={file.url}
               alt={file.name}
+              width={1200}
+              height={800}
               className="max-w-full max-h-[70vh] object-contain rounded-lg"
+              unoptimized
             />
           ) : (
             <Image

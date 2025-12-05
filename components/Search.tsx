@@ -10,7 +10,13 @@ import { Models } from "node-appwrite";
 import Thumbnail from "@/components/Thumbnail";
 import FormattedDateTime from "@/components/FormattedDateTime";
 import { useDebounce } from "use-debounce";
-const Search = ({ userId, userEmail }: { userId: string; userEmail: string }) => {
+const Search = ({
+  userId,
+  userEmail,
+}: {
+  userId: string;
+  userEmail: string;
+}) => {
   const [query, setQuery] = useState("");
   const searchParams = useSearchParams();
   const searchQuery = searchParams.get("query") || "";
@@ -25,7 +31,7 @@ const Search = ({ userId, userEmail }: { userId: string; userEmail: string }) =>
       if (debouncedQuery.length === 0) {
         setResults([]);
         setOpen(false);
-        return router.push(path.replace(searchParams.toString(), ""));
+        return;
       }
 
       const files = await getFiles({
@@ -43,18 +49,33 @@ const Search = ({ userId, userEmail }: { userId: string; userEmail: string }) =>
 
   useEffect(() => {
     if (!searchQuery) {
+      // Safe to reset local query when the URL param is cleared.
+      /* eslint-disable-next-line react-hooks/set-state-in-effect */
       setQuery("");
     }
   }, [searchQuery]);
 
   const handleClickItem = (file: Models.Document) => {
+    // Close dropdown and clear local query/results
     setOpen(false);
     setResults([]);
+    setQuery("");
 
     router.push(
-      `/${file.type === "video" || file.type === "audio" ? "media" : file.type + "s"}?query=${query}`,
+      `/${
+        file.type === "video" || file.type === "audio"
+          ? "media"
+          : file.type + "s"
+      }?query=${query}`
     );
   };
+
+  // Close dropdown when the route changes (e.g., after navigating to a result)
+  useEffect(() => {
+    /* eslint-disable-next-line react-hooks/set-state-in-effect */
+    setOpen(false);
+    setResults([]);
+  }, [path]);
 
   return (
     <div className="search">
