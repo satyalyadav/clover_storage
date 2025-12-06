@@ -45,12 +45,11 @@ const Dashboard = async () => {
                 <div className="flex justify-between gap-3">
                   <Image
                     src={summary.icon}
-                    width={100}
-                    height={100}
+                    width={80}
+                    height={80}
                     alt="uploaded image"
                     className="summary-type-icon"
                     priority
-                    style={{ width: "auto", height: "auto" }}
                   />
                   <h4 className="summary-type-size">
                     {convertFileSize(summary.size) || 0}
@@ -71,7 +70,9 @@ const Dashboard = async () => {
 
       {/* Recent files uploaded */}
       <section className="dashboard-recent-files">
-        <h2 className="h3 xl:h2 text-light-100">Recent files uploaded</h2>
+        <h2 className="h3 xl:h2 text-light-100 dark:text-white">
+          Recent files uploaded
+        </h2>
         <RecentFilesList files={files.documents} />
       </section>
     </div>

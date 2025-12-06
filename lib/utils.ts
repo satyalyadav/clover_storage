@@ -25,7 +25,7 @@ export const convertFileSize = (sizeInBytes: number, digits?: number) => {
 };
 
 export const calculatePercentage = (sizeInBytes: number) => {
-  const totalSizeInBytes = 2 * 1024 * 1024 * 1024; // 2GB in bytes
+  const totalSizeInBytes = 128 * 1024 * 1024; // 128MB in bytes
   const percentage = (sizeInBytes / totalSizeInBytes) * 100;
   return Number(percentage.toFixed(2));
 };
@@ -79,7 +79,7 @@ export const formatDateTime = (isoString: string | null | undefined) => {
   if (!isoString) return "—";
 
   const date = new Date(isoString);
-  
+
   // Validate date
   if (isNaN(date.getTime())) return "—";
 
@@ -115,7 +115,7 @@ export const formatDateTime = (isoString: string | null | undefined) => {
 
 export const getFileIcon = (
   extension: string | undefined,
-  type: FileType | string,
+  type: FileType | string
 ) => {
   switch (extension) {
     // Document

@@ -44,7 +44,9 @@ export const Chart = ({ used = 0 }: { used: number }) => {
       ? 0
       : Math.min(percentage, 100); // Cap at 100%
 
-  const endAngle = validPercentage + 90;
+  // Calculate endAngle: start at 90° (top), progress clockwise
+  // 0% = 90°, 100% = 450° (full circle)
+  const endAngle = 90 + (validPercentage / 100) * 360;
   const chartData = [{ storage: validPercentage, fill: "white" }];
 
   return (
@@ -104,7 +106,7 @@ export const Chart = ({ used = 0 }: { used: number }) => {
       <CardHeader className="chart-details">
         <CardTitle className="chart-title">Available Storage</CardTitle>
         <CardDescription className="chart-description">
-          {validUsed ? convertFileSize(validUsed) : "0"} / 2GB
+          {validUsed ? convertFileSize(validUsed) : "0"} / 128MB
         </CardDescription>
       </CardHeader>
     </Card>

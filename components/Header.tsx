@@ -4,6 +4,7 @@ import Image from "next/image";
 import Search from "@/components/Search";
 import FileUploader from "@/components/FileUploader";
 import { signOutUser } from "@/lib/actions/user.actions";
+import ThemeToggle from "@/components/ThemeToggle";
 
 const Header = ({
   userId,
@@ -18,6 +19,7 @@ const Header = ({
     <header className="header">
       <Search userId={userId} userEmail={email} />
       <div className="header-wrapper">
+        <ThemeToggle />
         <FileUploader ownerId={userId} accountId={accountId} />
         <form
           action={async () => {
