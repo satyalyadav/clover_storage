@@ -1,10 +1,14 @@
 import React from "react";
 import Image from "next/image";
+import ThemeToggle from "@/components/ThemeToggle";
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
   return (
     <div className="flex min-h-screen">
-      <section className="hidden w-1/2 items-center justify-center bg-brand p-10 lg:flex xl:w-2/5">
+      <section className="hidden w-1/2 items-center justify-center bg-brand dark:bg-[#8b7355] p-10 lg:flex xl:w-2/5 relative transition-colors duration-300">
+        <div className="absolute top-4 right-4 lg:hidden">
+          <ThemeToggle />
+        </div>
         <div className="flex max-h-[800px] max-w-[430px] flex-col justify-center space-y-12">
           <Image
             src="/assets/icons/logo.svg"
@@ -31,7 +35,11 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
         </div>
       </section>
 
-      <section className="flex flex-1 flex-col items-center bg-white p-4 py-10 lg:justify-center lg:p-10 lg:py-0">
+      <section className="flex flex-1 flex-col items-center bg-white dark:bg-dark-100 p-4 py-10 lg:justify-center lg:p-10 lg:py-0 relative transition-colors duration-300">
+        <div className="absolute top-4 right-4">
+          <ThemeToggle />
+        </div>
+
         <div className="mb-16 lg:hidden">
           <Image
             src="/assets/icons/logo-full-clover.svg"
