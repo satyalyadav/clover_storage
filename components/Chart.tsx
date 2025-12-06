@@ -30,15 +30,20 @@ const chartConfig = {
 
 export const Chart = ({ used = 0 }: { used: number }) => {
   // Ensure used is a valid number
-  const validUsed = typeof used === 'number' && !Number.isNaN(used) && Number.isFinite(used) && used >= 0 
-    ? used 
-    : 0;
-  
+  const validUsed =
+    typeof used === "number" &&
+    !Number.isNaN(used) &&
+    Number.isFinite(used) &&
+    used >= 0
+      ? used
+      : 0;
+
   const percentage = calculatePercentage(validUsed);
-  const validPercentage = Number.isNaN(percentage) || !Number.isFinite(percentage) || percentage < 0
-    ? 0 
-    : Math.min(percentage, 100); // Cap at 100%
-  
+  const validPercentage =
+    Number.isNaN(percentage) || !Number.isFinite(percentage) || percentage < 0
+      ? 0
+      : Math.min(percentage, 100); // Cap at 100%
+
   const endAngle = validPercentage + 90;
   const chartData = [{ storage: validPercentage, fill: "white" }];
 
@@ -77,9 +82,7 @@ export const Chart = ({ used = 0 }: { used: number }) => {
                           y={viewBox.cy}
                           className="chart-total-percentage"
                         >
-                          {validPercentage
-                            .toString()
-                            .replace(/^0+/, "") || "0"}
+                          {validPercentage.toString().replace(/^0+/, "") || "0"}
                           %
                         </tspan>
                         <tspan

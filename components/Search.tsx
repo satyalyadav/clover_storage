@@ -10,6 +10,18 @@ import { Models } from "node-appwrite";
 import Thumbnail from "@/components/Thumbnail";
 import FormattedDateTime from "@/components/FormattedDateTime";
 import { useDebounce } from "use-debounce";
+
+interface FileDocument extends Models.Document {
+  type: FileType;
+  extension: string;
+  url: string;
+  name: string;
+  size: number;
+  owner: {
+    fullName: string;
+  };
+}
+
 const Search = ({
   userId,
   userEmail,
@@ -20,7 +32,7 @@ const Search = ({
   const [query, setQuery] = useState("");
   const searchParams = useSearchParams();
   const searchQuery = searchParams.get("query") || "";
-  const [results, setResults] = useState<Models.Document[]>([]);
+  const [results, setResults] = useState<FileDocument[]>([]);
   const [open, setOpen] = useState(false);
   const router = useRouter();
   const path = usePathname();
@@ -55,7 +67,7 @@ const Search = ({
     }
   }, [searchQuery]);
 
-  const handleClickItem = (file: Models.Document) => {
+  const handleClickItem = (file: FileDocument) => {
     // Close dropdown and clear local query/results
     setOpen(false);
     setResults([]);
