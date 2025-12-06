@@ -1,17 +1,8 @@
 # Clover - Cloud File Storage & Management
 
-Clover is a modern, full-stack cloud file storage and management web application. It provides users with a secure platform to upload, organize, view, and manage their files with features like file sharing, storage analytics, and intuitive file organization by type.
+Clover is a cloud file storage and management web application. It is basically a lightweight clone of Google Drive. It is built using Next.js for the frontend and Appwrite for the backend and database. You can upload all kinds of files on the platform, preview them, and also share them with other users in your instance of the application. Hosted on Vercel.
 
-## Features
-
-- 🔐 **User Authentication** - Secure sign-up and sign-in with Appwrite
-- 📁 **File Management** - Upload, download, rename, and delete files
-- 📊 **Storage Analytics** - Visual dashboard with storage usage charts and file type summaries
-- 🔗 **File Sharing** - Share files with other users via email
-- 📂 **File Organization** - Organize files by type (documents, images, videos, audio, others)
-- 🎨 **Modern UI** - Beautiful, responsive interface built with Tailwind CSS and Radix UI
-- 📱 **Mobile Responsive** - Works seamlessly on desktop and mobile devices
-- 🔍 **File Search & Sorting** - Find and organize files easily
+Based on the tutorial by [JavaScript Mastery](https://github.com/JavaScript-Mastery-Pro/storage-management).
 
 ## Technologies Used
 
